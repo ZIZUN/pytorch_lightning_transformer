@@ -7,7 +7,8 @@ import pytorch_lightning as pl
 from util.others.my_metrics import Accuracy
 from util.others.dist_utils import is_main_process
 
-from .bert_modeling import BertConfig, BertModel
+from util.model.modeling.transformer import Transformer, TransformerConfig
+from util.model.modeling.encoder import TransformerEncoder
 from transformers.modeling_outputs import SequenceClassifierOutput
 
 
@@ -20,22 +21,25 @@ class IntentCLSModule(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         
-        model_config = BertConfig()
-        model_config.bert_hidden_size = _config['bert_hidden_size']
-        model_config.bert_layer_num = _config['bert_layer_num']
+        model_config = TransformerConfig()
+        model_config.transformer_hidden_size = _config['transformer_hidden_size']
+        model_config.position_encoding_maxlen = _config['position_encoding_maxlen']
         model_config.multi_head_num = _config['multi_head_num']
         model_config.qkv_hidden_size = _config['qkv_hidden_size']
         model_config.vocab_size = _config['vocab_size']
+        model_config.encoder_layer_num = _config['encoder_layer_num']
+        model_config.decoder_layer_num = _config['decoder_layer_num']
+
         
-        self.model = BertModel(config=model_config)
+        self.model = Transformer(config=model_config)
         
-        self.classifier = nn.Linear(model_config.bert_hidden_size, num_labels)
+        self.classifier = nn.Linear(model_config.transformer_hidden_size, num_labels)
             
         self.metric = Accuracy()
 
     def forward(self, input_ids, attention_mask, labels=None):
         
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        outputs = self.model(enc_input_ids=input_ids, enc_attention_mask=attention_mask, dec_input_ids=input_ids)
         
         logits = self.classifier(outputs[:,0,:].squeeze(1))
         

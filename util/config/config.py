@@ -12,11 +12,14 @@ def config():
     
     # BERT hyper-parameter setting
     vocab_size = 50265
-    bert_hidden_size = 768
-    multi_head_num = 12
+    transformer_hidden_size = 512
+    multi_head_num = 8
+    position_encoding_maxlen = 512
+    
     qkv_hidden_size = 64
-    bert_layer_num = 12  
-    position_encoding_maxlen = 512  
+
+    encoder_layer_num = 6
+    decoder_layer_num = 6
     
     # GPU, CPU Environment Setting
     num_nodes = 1

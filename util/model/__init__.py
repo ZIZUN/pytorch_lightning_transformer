@@ -1,2 +1,3 @@
 
-from .Classifier import Intent_CLS_Module
+from .IntentClsModule import IntentCLSModule
+from .bert_modeling import BertModel, BertConfig

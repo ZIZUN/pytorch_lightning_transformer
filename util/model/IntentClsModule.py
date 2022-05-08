@@ -1,5 +1,4 @@
-from transformers.modeling_outputs import SequenceClassifierOutput
-from transformers.models.roberta.modeling_roberta import RobertaConfig, RobertaForSequenceClassification
+
 import torch.nn as nn
 import torch
 
@@ -8,27 +7,37 @@ import pytorch_lightning as pl
 from util.others.my_metrics import Accuracy
 from util.others.dist_utils import is_main_process
 
+from .bert_modeling import BertConfig, BertModel
+from transformers.modeling_outputs import SequenceClassifierOutput
+
+
 from transformers import (
     get_cosine_schedule_with_warmup
 )
 
-class Intent_CLS_Module(pl.LightningModule):
+class IntentCLSModule(pl.LightningModule):
     def __init__(self, _config, num_labels=2):
         super().__init__()
         self.save_hyperparameters()
-                
-        if _config['model_name'] == 'roberta-base':
-            model_config = RobertaConfig.from_pretrained(pretrained_model_name_or_path="roberta-base",
-                                                         hidden_dropout_prob=0.1, num_labels=num_labels)
-            self.model = RobertaForSequenceClassification.from_pretrained("roberta-base", config=model_config)
+        
+        model_config = BertConfig()
+        model_config.bert_hidden_size = _config['bert_hidden_size']
+        model_config.bert_layer_num = _config['bert_layer_num']
+        model_config.multi_head_num = _config['multi_head_num']
+        model_config.qkv_hidden_size = _config['qkv_hidden_size']
+        model_config.vocab_size = _config['vocab_size']
+        
+        self.model = BertModel(config=model_config)
+        
+        self.classifier = nn.Linear(model_config.bert_hidden_size, num_labels)
             
         self.metric = Accuracy()
 
     def forward(self, input_ids, attention_mask, labels=None):
         
-        outputs = self.model.roberta(input_ids=input_ids, attention_mask=attention_mask)
-        sequence_output = outputs[0]
-        logits = self.model.classifier(sequence_output)
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        
+        logits = self.classifier(outputs[:,0,:].squeeze(1))
         
         loss_fct = nn.CrossEntropyLoss()
         loss = loss_fct(logits, labels)
@@ -36,8 +45,6 @@ class Intent_CLS_Module(pl.LightningModule):
         return SequenceClassifierOutput(
             loss=loss,
             logits=logits,
-            hidden_states=outputs.hidden_states,
-            attentions=outputs.attentions,
         )
         
     def training_step(self, batch, batch_idx):

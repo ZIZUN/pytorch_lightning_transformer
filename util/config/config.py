@@ -10,6 +10,14 @@ def config():
     
     seed = 1841
     
+    # BERT hyper-parameter setting
+    vocab_size = 50265
+    bert_hidden_size = 768
+    multi_head_num = 12
+    qkv_hidden_size = 64
+    bert_layer_num = 12  
+    position_encoding_maxlen = 512  
+    
     # GPU, CPU Environment Setting
     num_nodes = 1
     gpus = [0,1,2,3]
@@ -35,6 +43,6 @@ def config():
 @ex.named_config
 def text_roberta_base():
     model_name = "roberta-base"
-    # vocab_size = 50265
-    # input_text_embed_size = 768
+    vocab_size = 50265
+    bert_hidden_size = 768
     

@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 from tqdm import tqdm
 
 
-class Intent_CLS_DataModule(LightningDataModule):
+class IntentCLSDataModule(LightningDataModule):
     def __init__(self, _config, dist=True):
         super().__init__()
         

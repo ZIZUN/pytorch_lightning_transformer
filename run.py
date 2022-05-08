@@ -1,8 +1,8 @@
 import pytorch_lightning as pl
 
 from util.config import ex
-from util.dataset.lightning_dataset import Intent_CLS_DataModule
-from util.model.Classifier import Intent_CLS_Module
+from util.dataset.lightning_dataset import IntentCLSDataModule
+from util.model.IntentClsModule import IntentCLSModule
 import copy
 import os
 
@@ -43,8 +43,8 @@ def main(_config):
         _config["per_gpu_batch_size"] * len(_config['gpus']) * _config["num_nodes"]
     ), 1)
 
-    dm = Intent_CLS_DataModule(_config=_config)
-    model = Intent_CLS_Module(_config=_config, num_labels=len(dm.train_labels_li))
+    dm = IntentCLSDataModule(_config=_config)
+    model = IntentCLSModule(_config=_config, num_labels=len(dm.train_labels_li))
 
     trainer = pl.Trainer(
         gpus=_config['gpus'],

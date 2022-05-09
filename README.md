@@ -167,9 +167,9 @@ class MultiHeadAttention(nn.Module):
         bsz= q.size(0)
         seq_len = k.size(1)
         
-        q = q.view(bsz, self.config.multi_head_num, seq_len, -1)
-        k = k.view(bsz, self.config.multi_head_num, seq_len, -1)
-        v = v.view(bsz, self.config.multi_head_num, seq_len, -1)
+        q = q.view(bsz, seq_len, self.config.multi_head_num, -1).transpose(1,2)
+        k = k.view(bsz, seq_len, self.config.multi_head_num, -1).transpose(1,2)
+        v = v.view(bsz, seq_len, self.config.multi_head_num, -1).transpose(1,2)
         
         qk_mul = torch.matmul(q, k.transpose(-2,-1)) / math.sqrt(q.size(-1))
         
@@ -178,8 +178,8 @@ class MultiHeadAttention(nn.Module):
         elif encoder_output == None and attention_mask == None: # decoder masked att
             mask = torch.ones(bsz,seq_len,seq_len)
             mask = mask.triu(diagonal=1)
-            mask = mask.unsqueeze(1).to(qk_mul.device)      
-        masked_qk_mul = qk_mul.masked_fill(mask == 1, -float('inf'))
+            mask = (mask==0).unsqueeze(1).to(qk_mul.device)   
+        masked_qk_mul = qk_mul.masked_fill(mask == 0, -float('inf'))
         
         qk_score = self.softmax(masked_qk_mul) # divide by scaling factor
         attn_output = torch.matmul(qk_score, v)

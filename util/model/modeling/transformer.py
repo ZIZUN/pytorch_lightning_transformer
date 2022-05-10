@@ -9,9 +9,10 @@ class Transformer(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config                
-                
-        self.encoder = TransformerEncoder(config)
-        self.decoder = TransformerDecoder(config)
+
+        self.shared_word_embedding = nn.Embedding(config.vocab_size, config.transformer_hidden_size)                
+        self.encoder = TransformerEncoder(config, shared_word_embedding=self.shared_word_embedding)
+        self.decoder = TransformerDecoder(config, shared_word_embedding=self.shared_word_embedding)
 
     def forward(self, enc_input_ids, enc_attention_mask, dec_input_ids):
         

@@ -31,9 +31,10 @@ class Transformer(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config                
-                
-        self.encoder = TransformerEncoder(config)
-        self.decoder = TransformerDecoder(config)
+
+        self.shared_word_embedding = nn.Embedding(config.vocab_size, config.transformer_hidden_size)                
+        self.encoder = TransformerEncoder(config, shared_word_embedding=self.shared_word_embedding)
+        self.decoder = TransformerDecoder(config, shared_word_embedding=self.shared_word_embedding)
 
     def forward(self, enc_input_ids, enc_attention_mask, dec_input_ids):
         
@@ -56,11 +57,11 @@ class TransformerConfig:
         self.decoder_layer_num = 6
         
 class TransformerEncoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, shared_word_embedding):
         super().__init__()
         self.config = config                
                 
-        self.word_embedding = nn.Embedding(config.vocab_size, config.transformer_hidden_size)
+        self.word_embedding = shared_word_embedding
         self.pos_embedding = PosEncoding(config)
         self.encoder_layers = nn.ModuleList([TransformerEncoderLayer(config) for i in range(config.encoder_layer_num)])
 
@@ -95,11 +96,11 @@ class TransformerEncoderLayer(nn.Module):
         return layer_output    
         
 class TransformerDecoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, shared_word_embedding):
         super().__init__()
         self.config = config                
                 
-        self.word_embedding = nn.Embedding(config.vocab_size, config.transformer_hidden_size)
+        self.word_embedding = shared_word_embedding
         self.pos_embedding = PosEncoding(config)
         self.decoder_layers = nn.ModuleList([TransformerDecoderLayer(config) for i in range(config.encoder_layer_num)])
 

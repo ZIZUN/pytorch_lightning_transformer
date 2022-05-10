@@ -7,11 +7,11 @@ from .attention import MultiHeadAttention
 
 
 class TransformerDecoder(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, shared_word_embedding):
         super().__init__()
         self.config = config                
                 
-        self.word_embedding = nn.Embedding(config.vocab_size, config.transformer_hidden_size)
+        self.word_embedding = shared_word_embedding
         self.pos_embedding = PosEncoding(config)
         self.decoder_layers = nn.ModuleList([TransformerDecoderLayer(config) for i in range(config.encoder_layer_num)])
 
